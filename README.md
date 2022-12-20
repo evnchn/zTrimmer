@@ -18,9 +18,15 @@ A quick way to trim and handle images in the clipboard.
 
 This is still in early beta so no installer is provided. Please install all dependencies in the top of the zTrimmer.py file, then using other software such as AutoHotKey, map a certain hotkey to launch this script (no command-line arguments needed nor accepted). 
 
+## Learning how to use
+
+I personally recommend playing around with tutorial.png and try to experiment with the on-screen instructions and numberpad buttons until one reaches the image in tutorial-destination.png
+The controlls are intuitive once you learnt to use them. 
+
 ## Instructions
 
-1. Copy image to clipboard. 
+1. Copy image to clipboard / copy image file to clipboard (PNG/BMP highly recommended)
+   - Only works with images with lossless compression for now. Does not work with JPEGs very well. 
 2. Launch zTrimmer.py
 3. Refer to the on-screen instructions: **1:[B]lack / 2:[W]hite / 3:[H]ex / 4:[R]GB / 5:[T]rim only**
    - If the image is transparent, you may press **5/T** to Trim the image according to the minimum bounding box of non-transparent images {Photoshop -> Image -> Trim -> Based on Transparent Pixels}. 
