@@ -9,7 +9,15 @@ from io import BytesIO
 import win32clipboard
 import webbrowser
 import string
+import ctypes
+import platform
 
+
+def make_dpi_aware():
+    if int(platform.release()) >= 8:
+        ctypes.windll.shcore.SetProcessDpiAwareness(True)
+        
+make_dpi_aware()
 try:
     os.mkdir("output")
 except:
@@ -35,8 +43,7 @@ layout = [
 
         [sg.Image(key='-IMAGE-', pad=(0, 0))]
          ]
-
-
+         
 
 window = sg.Window('Loading...', layout, return_keyboard_events=True, finalize = True, element_justification='c', margins=(0,0), background_color = "#64778d")
 window.Maximize()
@@ -44,7 +51,7 @@ window.Maximize()
 
 
 
-def loadimage(PIL_im, mode=False):
+def loadimage(PIL_im, mode=True):
     global window
     if mode:
         ratio = min(window.size[0]//PIL_im.size[0], window.size[1]//PIL_im.size[1])
@@ -57,11 +64,14 @@ def loadimage(PIL_im, mode=False):
             #PIL_im = ImageOps.pad(PIL_im, window.size, color="#FF0000")
             print(PIL_im.size)
             print("Done")
-            image = ImageTk.PhotoImage(image=PIL_im)
+            #image = ImageTk.PhotoImage(image=PIL_im)
             # update image in sg.Image
-            window['-IMAGE-'].update(data=image)
-            return
-    PIL_im = ImageOps.contain(PIL_im, window.size)
+            #window['-IMAGE-'].update(data=image)
+            #return
+    else:
+        PIL_im = ImageOps.contain(PIL_im, window.size)
+    
+    PIL_im = ImageOps.pad(PIL_im, window.size, color="#64778d")
     # Convert im to ImageTk.PhotoImage after window finalized
     image = ImageTk.PhotoImage(image=PIL_im)
     # update image in sg.Image
@@ -139,7 +149,10 @@ def remove_transparency(im, bg_colour=(255, 255, 255)):
 def check_img_transparency(im):
     # http://stackoverflow.com/a/1963146
     return (im.mode in ('RGBA', 'LA') or (im.mode == 'P' and 'transparency' in im.info))
-    
+
+
+
+
 if check_img_transparency(img) and ImageChops.difference(img.convert("RGBA"), remove_transparency(img.convert("RGBA"))).getbbox():
     parity = 0
     color_palette = ((0,0,0),(0,255,0))
