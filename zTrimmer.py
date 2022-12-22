@@ -91,7 +91,7 @@ for key in list(set("bwhrtBWHRT0123456789/*-+.,abcdefABCDEF")):
     window.bind(key, "-NUMPAD-{}-".format(key))
 window.bind("<Escape>", "-ESCAPE-")
 window.bind("<Return>", "-ENTER_KEY-")
-
+window.bind("<BackSpace>", "-BACKSPACE-")
 
 gridsize = 10
 
@@ -168,6 +168,7 @@ if check_img_transparency(img) and ImageChops.difference(img.convert("RGBA"), re
     
     while True:
         event, values = window.read(timeout=0)
+        print(event)
         if event in (sg.WIN_CLOSED, '_EXIT_', 'Close'):
             sys.exit()
         if capture_mode == "Hex" and "-NUMPAD-" in event:
@@ -188,9 +189,12 @@ if check_img_transparency(img) and ImageChops.difference(img.convert("RGBA"), re
             if len(get_keyboard.split(",")) == 4:
                 bg_colour = tuple(int(substr.strip(string.ascii_letters)) for substr in get_keyboard.split(","))[:3]
                 break
-            elif len(get_keyboard) == 9:
-                bg_colour = tuple(int(usrinput[i:i+3]) for i in (0, 3, 6))
+            elif len(get_keyboard) == 9 and get_keyboard.isdigit():
+                bg_colour = tuple(int(get_keyboard[i:i+3]) for i in (0, 3, 6))
                 break
+        elif capture_mode and event == "-BACKSPACE-":
+            get_keyboard = get_keyboard[:-1]
+            window.TKroot.title("{}: {}".format(capture_mode, get_keyboard))
         else:
             if event in ("-NUMPAD-{}-".format(5),"-NUMPAD-{}-".format("t"),"-NUMPAD-{}-".format("T")):
                 img = autocrop_image2(img)
