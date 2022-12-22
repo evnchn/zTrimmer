@@ -55,15 +55,15 @@ def loadimage(PIL_im, mode=True):
     global window
     if mode:
         ratio = min(window.size[0]//PIL_im.size[0], window.size[1]//PIL_im.size[1])
-        print(ratio)
+        #print(ratio)
         ratio = int(ratio)
         if ratio:
-            print(PIL_im.size[0]*ratio,PIL_im.size[1]*ratio)
-            print(window.size)
+            #print(PIL_im.size[0]*ratio,PIL_im.size[1]*ratio)
+            #print(window.size)
             PIL_im = PIL_im.resize((PIL_im.size[0]*ratio,PIL_im.size[1]*ratio), resample=Image.Resampling.NEAREST)
             #PIL_im = ImageOps.pad(PIL_im, window.size, color="#FF0000")
-            print(PIL_im.size)
-            print("Done")
+            #print(PIL_im.size)
+            #print("Done")
             #image = ImageTk.PhotoImage(image=PIL_im)
             # update image in sg.Image
             #window['-IMAGE-'].update(data=image)
@@ -280,11 +280,41 @@ def trim(im, seed):
     if bbox:
         return im.crop(bbox)
         
+def trim_bbox(im, seed):
+    bg = Image.new(im.mode, im.size, im.getpixel(seed))
+    diff = ImageChops.difference(im, bg)
+    #diff = ImageChops.add(diff, diff, 2.0, -100)
+    bbox = diff.getbbox()
+    if bbox:
+        return im.crop(bbox), bbox
+        
+        
+        
 confirm_key = None
+
+history = []
+
+phantom_crop_box = [0, 0, img.size[0], img.size[1]]
+
+def phantom_crop(bbox):
+    global phantom_crop_box
+    global image
+    #croponce = (a,b,c,d)
+
+    #croptwice = (i,j,k,l)
+
+    #croptotal = (a+i,b+j,c-a+k, d-b+l)
+    
+    a,b,c,d = phantom_crop_box
+    i,j,k,l = bbox
+    
+    phantom_crop_box = [a+i,b+j,k+a, l+b]
+    
+    
 
 
 loadimage(img)
-window.TKroot.title("[Enter]: save. [.]: quit. [-]: reset.")
+window.TKroot.title("[Enter]: save. [.]: quit. [-]: undo.")
 while True:
     event, values = window.read(timeout=0)
     if event in (sg.WIN_CLOSED, '_EXIT_', 'Close'):
@@ -298,7 +328,7 @@ while True:
             window.close()
             sys.exit()
     elif event in ("-ENTER_KEY-",): 
-        print("Enter event")
+        #print("Enter event")
         if not confirm_key == "enter":
             confirm_key = "enter"
             window.TKroot.title("[Enter]: Clipboard, [+]: Browser, [-]: File")
@@ -341,40 +371,59 @@ while True:
         webbrowser.open("output")
         sys.exit()
     if event in ("-NUMPAD-{}-".format("1"),"-NUMPAD-{}-".format("3"),"-NUMPAD-{}-".format("7"),"-NUMPAD-{}-".format("9")):
-        window.TKroot.title("[Enter]: save. [.]: quit. [-]: reset.")
+        window.TKroot.title("[Enter]: save. [.]: quit. [-]: undo.")
         confirm_key = None
         coords = [(0,0), (0,img.size[1]-1), (img.size[0]-1,0), (img.size[0]-1,img.size[1]-1)]
         lookup = {1: 1, 7:0, 9:2, 3:3}
         #print(coords[lookup[int(event.key)]])
         #img = crop_image(img, coords[lookup[int(event.key)]])
         keynumber = int(event[8])
-        img2 = trim(img, coords[lookup[int(keynumber)]])
+        img2, bbox = trim_bbox(img, coords[lookup[int(keynumber)]])
         if img2:
+            history.append(phantom_crop_box)
             img = img2
+            phantom_crop(bbox)
+            
+            print(history)
         else: 
             print("Image is a same-colored patch. Cropping will yield 0 pixels!!!")
             window.TKroot.title("Image is a same-colored patch. Cropping will yield 0 pixels!!!")
         loadimage(img)
     elif event in ("-NUMPAD-{}-".format("5"),):
-        window.TKroot.title("[Enter]: save. [.]: quit. [-]: reset.")
+        window.TKroot.title("[Enter]: save. [.]: quit. [-]: undo.")
         confirm_key = None
         for coord_i in range(4):
             coords = [(0,0), (0,img.size[1]-1), (img.size[0]-1,0), (img.size[0]-1,img.size[1]-1)]
             #print(coords)
-            img2 = trim(img, coords[coord_i])
+            img2, bbox = trim_bbox(img, coords[coord_i])
             if img2:
                 img = img2
+                history.append(phantom_crop_box)
+                phantom_crop(bbox)
+                
+                print(history)
             else: 
                 print("Image is a same-colored patch. Cropping will yield 0 pixels!!!")
                 window.TKroot.title("Image is a same-colored patch. Cropping will yield 0 pixels!!!")
         loadimage(img)
     elif event in ("-NUMPAD-{}-".format("-"),):
-        window.TKroot.title("[Enter]: save. [.]: quit. [-]: reset.")
+        print("- pressed")
+        window.TKroot.title("[Enter]: save. [.]: quit. [-]: undo.")
         confirm_key = None
-        img = img_orig.copy()
-        loadimage(img)
+        if not history:
+            img = img_orig.copy()
+            phantom_crop_box = [0, 0, img.size[0], img.size[1]]
+
+            loadimage(img)
+        else:
+            print("Old:",history)
+            oldcropbox = history.pop()
+            img = img_orig.crop(oldcropbox)
+            phantom_crop_box = oldcropbox
+            loadimage(img)
+            print("New:",history)
     elif event in ("-NUMPAD-{}-".format("8"),):
-        window.TKroot.title("[Enter]: save. [.]: quit. [-]: reset.")
+        window.TKroot.title("[Enter]: save. [.]: quit. [-]: undo.")
         confirm_key = None
         if img.size[1] > 1:
             confirm_key = None
@@ -388,8 +437,13 @@ while True:
                     break
             # i-th and 0-th not equal, i-1-th equal. But we trim one more
             try:
+                
                 img_arr = img_arr[i-1+1:]
-            except:
+                history.append(list(phantom_crop_box))
+                phantom_crop_box[1] += i
+                print(phantom_crop_box)
+            except Exception as e:
+                print(e)
                 print("Image just 1 pixel tall!!!")
                 window.TKroot.title("Image just 1 pixel tall!!!")
             img = Image.fromarray(img_arr)
@@ -398,7 +452,7 @@ while True:
             print("Image just 1 pixel tall!!!")
             window.TKroot.title("Image just 1 pixel tall!!!")
     elif event in ("-NUMPAD-{}-".format("2"),):
-        window.TKroot.title("[Enter]: save. [.]: quit. [-]: reset.")
+        window.TKroot.title("[Enter]: save. [.]: quit. [-]: undo.")
         confirm_key = None
         if img.size[1] > 1:
             confirm_key = None
@@ -413,6 +467,9 @@ while True:
             # But we trim one more
             try:
                 img_arr = img_arr[:-(i-1-1+1)]
+                history.append(list(phantom_crop_box))
+                phantom_crop_box[3] -= (i-1)
+                print(phantom_crop_box)
             except:
                 print("Image just 1 pixel tall!!!")
                 window.TKroot.title("Image just 1 pixel tall!!!")
@@ -422,7 +479,7 @@ while True:
             print("Image just 1 pixel tall!!!")
             window.TKroot.title("Image just 1 pixel tall!!!")
     elif event in ("-NUMPAD-{}-".format("4"),):
-        window.TKroot.title("[Enter]: save. [.]: quit. [-]: reset.")
+        window.TKroot.title("[Enter]: save. [.]: quit. [-]: undo.")
         confirm_key = None
         if img.size[0] > 1:
             confirm_key = None
@@ -437,6 +494,9 @@ while True:
             # i-th and 0-th not equal, i-1-th equal
             try:
                 img_arr = img_arr[i-1+1:]
+                history.append(list(phantom_crop_box))
+                phantom_crop_box[0] += i
+                print(phantom_crop_box)
             except:
                 print("Image just 1 pixel wide!!!")
                 window.TKroot.title("Image just 1 pixel wide!!!")
@@ -446,7 +506,7 @@ while True:
             print("Image just 1 pixel wide!!!")
             window.TKroot.title("Image just 1 pixel wide!!!")
     elif event in ("-NUMPAD-{}-".format("6"),):
-        window.TKroot.title("[Enter]: save. [.]: quit. [-]: reset.")
+        window.TKroot.title("[Enter]: save. [.]: quit. [-]: undo.")
         confirm_key = None
         if img.size[0] > 1:
             confirm_key = None
@@ -461,6 +521,9 @@ while True:
             # i-th and 0-th not equal, i-1-th equal
             try:
                 img_arr = img_arr[:-(i-1-1+1)]
+                history.append(list(phantom_crop_box))
+                phantom_crop_box[2] -= (i-1)
+                print(phantom_crop_box)
             except:
                 print("Image just 1 pixel wide!!!")
                 window.TKroot.title("Image just 1 pixel wide!!!")
