@@ -29,23 +29,26 @@ The controlls are intuitive once you learnt to use them.
    - Only works with images with lossless compression for now. Does not work with JPEGs very well. 
 2. Launch zTrimmer.py
 3. For transparent images, refer to the on-screen instructions on the title bar: **1:[B]lack / 2:[W]hite / 3:[H]ex / 4:[R]GB / 5:[T]rim only / 6:[-] Open output**
-   - You may press **5/T** to Trim the image according to the minimum bounding box of non-transparent images {Photoshop -> Image -> Trim -> Based on Transparent Pixels}. 
-   - Alternatively, you can press **1/B or 2/W** to flatten to black or white, or press **3/H or 4/R** and enter Hex values and RGB values respectively. 
+   - You may press <kbd>5</kbd>/<kbd>T</kbd> to Trim the image according to the minimum bounding box of non-transparent images {Photoshop -> Image -> Trim -> Based on Transparent Pixels}. 
+   - You may press <kbd>6</kbd>/<kbd>-</kbd> which opens the output folder. 
+   - Alternatively, you can press <kbd>1</kbd>/<kbd>B</kbd> or <kbd>2</kbd>/<kbd>W</kbd> to flatten to black or white, or press <kbd>3</kbd>/<kbd>H</kbd> or <kbd>4</kbd>/<kbd>R</kbd> and enter Hex values and RGB values respectively. 
    - For Hex values, # prefixes simply cannot be entered. (e.g. ```FF00FF```)
    - For RGB values, anything with 3 commas will be accepted, such as ```255,0,255,```. Other non-numeric characters always treated as comma. 
      - You may also enter RGB values with 3-digit channel values, such as ```255000255```, which is also accepted here. 
 4. The trimming interface accepts keypresses assuming a numberpad layout. 
-   - 1, 7, 9, 3: Trims image of area same color as the corresponding corner
+   - <kbd>1</kbd>, <kbd>7</kbd>, <kbd>9</kbd>, <kbd>3</kbd>: Trims image of area same color as the corresponding corner
      - Same as {Photoshop -> Image -> Trim -> Based on XXX Pixel Color}
      - If the image is of a same color, trimming would leave zero pixels behind. Therefore there will be no change. 
-   - 2, 4, 8, 6: Trims the image beginning from the edge until the row/column of pixels is different. 
+   - <kbd>2</kbd>, <kbd>4</kbd>, <kbd>8</kbd>, <kbd>6</kbd>: Trims the image beginning from the edge until the row/column of pixels is different. 
      - If there is nothing to crop, it would still always crop 1 row/column of pixels. 
        - This helps with cropping some pixtures with antialiased features. 
      - If the image is of a same color, this would leave a single pixel wide/tall image. 
-   - 5: currently performs keypress 7 1 9 3
-   - . [Dot]: Press twice to quit without saving
-   - [Enter]: Press twice to copy result back to clipboard
-   - [-]: Revert to original. 
+   - <kbd>5</kbd>: currently performs keypress 7 1 9 3
+   - <kbd>.</kbd>-><kbd>.</kbd>: Press twice to quit without saving
+   - <kbd>Enter</kbd>-><kbd>Enter</kbd>: Press twice to copy result back to clipboard
+   - <kbd>Enter</kbd>-><kbd>+</kbd>: Opens the browser for easier Google Image Search / Bing Image Search
+   - <kbd>Enter</kbd>-><kbd>-</kbd>: Opens the output folder for easier image uploading
+   - <kbd>-</kbd>: Revert to original
    
 
  
