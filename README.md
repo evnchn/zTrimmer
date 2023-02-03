@@ -48,7 +48,7 @@ The controlls are intuitive once you learnt to use them.
    - <kbd>Enter</kbd>-><kbd>Enter</kbd>: Press twice to copy result back to clipboard
    - <kbd>Enter</kbd>-><kbd>+</kbd>: Opens the browser for easier Google Image Search / Bing Image Search
    - <kbd>Enter</kbd>-><kbd>-</kbd>: Opens the output folder for easier image uploading
-   - <kbd>-</kbd>: Revert to original
+   - <kbd>-</kbd>: **Undo**
    
 
  
